@@ -93,12 +93,11 @@ function saveUserCredentialsInLocalStorage() {
   if (currentUser) {
     localStorage.setItem("token", currentUser.loginToken);
     localStorage.setItem("username", currentUser.username);
-    localStorage.setItem("favoriteStories", favoriteStories)
   }
 }
 
 /******************************************************************************
- * General UI stuff about users
+ * General UI stuff about users & profiles
  */
 
 /** When a user signs up or registers, we want to set up the UI for them:
@@ -108,65 +107,25 @@ function saveUserCredentialsInLocalStorage() {
  * - generate the user profile part of the page
  */
 
-function updateUIOnUserLogin() {
+async function updateUIOnUserLogin() {
   console.debug("updateUIOnUserLogin");
 
+  hidePageComponents();
+
+  // re-display stories (so that "favorite" stars can appear)
+  putStoriesOnPage();
   $allStoriesList.show();
 
   updateNavOnLogin();
+  generateUserProfile();
 }
 
-/** allows user to favorite and un-favorite a story. 
- * This data will remain even when the page refreshes. */
+/** Show a "user profile" part of page built from the current user's info. */
 
+function generateUserProfile() {
+  console.debug("generateUserProfile");
 
-
-  $("body").on("click", function (e) {
-    if (e.target.className === 'far fa-star') {
-      let icon = e.target;
-      $(icon).toggleClass( "favorited" );
-      let story = $(icon).closest("li");
-      currentUser.favorites.push(story);
-      console.log(currentUser.favorites);
-    }
-  });
-
-$("body").on("dblclick", function (e) {
-  if (e.target.className === 'far fa-star favorited') {
-    let icon = e.target;
-    $(icon).toggleClass("favorited");
-    let story = $(icon).closest("li");
-    currentUser.favorites.pop(story);
-    console.log(currentUser.favorites);
-    }
-  })
-
-$("body").on("click", function (e) {
-  if (e.target.className === 'fas fa-trash-alt') {
-    let icon = e.target;
-    $(icon).closest("li").remove();
-  }
-});
-
-function createFavoritesList () {
-  console.debug("createFavoritesList");
-  console.log(currentUser.favorites);
-
-  for (const fav of currentUser.favorites) {
-    let newFav = $(`
-      <li id>
-        <button id="removeBtn" class="btn"><i class="fas fa-trash-alt"></i></button>
-        <a href="${fav[0].children[2].innerText}" target="a_blank" class="story-link">
-          ${fav[0].children[2].innerText} 
-        </a>
-        <small class="story-hostname">${fav[0].children[3].innerText}</small>
-        <small class="story-author">${fav[0].children[4].innerText}</small>
-        <small class="story-user">${fav[0].children[5].innerText}</small>
-      </li>
-    `);
-    $("#all-favorites-list").append(newFav);
-    $("#all-favorites-list").show();
-  };
-  $("#all-favorites-list").show();
+  $("#profile-name").text(currentUser.name);
+  $("#profile-username").text(currentUser.username);
+  $("#profile-account-date").text(currentUser.createdAt.slice(0, 10));
 }
-
